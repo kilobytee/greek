@@ -1,0 +1,4 @@
+version: 1
+bundleID: com.greek.ios
+infoPath: GreekApp/Info.plist
+iconPath: GreekApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png

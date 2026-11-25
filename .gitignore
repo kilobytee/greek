@@ -1,0 +1,30 @@
+# Dependencias y artefactos de build
+node_modules/
+.svelte-kit/
+build/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+desktop/src-tauri/.cargo-lock
+*.log
+
+# Secretos y datos locales
+.env
+.env.*
+!.env.example
+token
+state.json
+sandbox/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# iOS generado por XcodeGen y Xcode
+ios/Greek.xcodeproj/
+ios/*.xcworkspace/
+ios/build/
+ios/DerivedData/
+xcuserdata/
+*.xcuserstate

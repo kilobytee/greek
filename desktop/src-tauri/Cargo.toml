@@ -1,0 +1,44 @@
+[package]
+name = "greek"
+version = "0.1.0"
+description = "Greek, agente personal con escritorio virtual aislado"
+authors = ["Greek"]
+edition = "2021"
+rust-version = "1.77"
+default-run = "greek"
+
+[lib]
+name = "greek_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "greek"
+path = "src/main.rs"
+
+[[bin]]
+name = "greek-server"
+path = "src/bin/greek-server.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["ws", "json"] }
+chrono = "0.4"
+dotenvy = "0.15"
+futures-util = "0.3"
+keyring = "4.2"
+reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls", "query"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+subtle = "2"
+tauri = { version = "2.12", features = [] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.7", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
