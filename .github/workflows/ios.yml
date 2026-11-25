@@ -38,6 +38,30 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee xcodebuild.log
 
+      - name: Build unsigned IPA for device
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project Greek.xcodeproj \
+            -scheme Greek \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          mkdir -p Payload
+          cp -R DerivedData/Build/Products/Release-iphoneos/Greek.app Payload/
+          zip -qry Greek-unsigned.ipa Payload
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Greek-unsigned-ipa
+          path: ios/Greek-unsigned.ipa
+          if-no-files-found: error
+
       - name: Upload log on failure
         if: failure()
         uses: actions/upload-artifact@v4
