@@ -18,7 +18,7 @@ Desktop (Tauri 2 + Svelte 5) ────────┘        ├── Open-M
 - **Escritorio**: Tauri 2, SvelteKit 3, Svelte 5 y TypeScript. Diseño oscuro de tres columnas.
 - **Núcleo**: Rust con axum, tokio, reqwest y keyring. Estado persistido en JSON, token en el llavero del sistema.
 - **iPhone**: SwiftUI, WebSocket nativo, token en el Llavero, objetivos táctiles de 44 pt.
-- **Proveedores**: local por reglas, Ollama en `127.0.0.1:11434` u OpenRouter con clave gratuita. Sin claves, la app sigue funcionando con herramientas reales.
+- **Proveedores**: local por reglas, OpenCode Zen, Ollama en `127.0.0.1:11434` u OpenRouter. Sin claves, la app sigue funcionando con herramientas reales.
 
 ## Estructura
 
@@ -80,8 +80,17 @@ Los artefactos quedan en `desktop/src-tauri/target/release/bundle`.
 
 ### Configuración opcional
 
-Copia `.env.example` a `desktop/.env` y completa lo que uses:
+Ya existe un `desktop/.env` con todos los campos vacíos. Para OpenCode Zen, ejecuta desde `desktop/`:
 
+```powershell
+.\set-api-key.ps1
+```
+
+El script pide la clave sin mostrarla y pregunta por el id exacto del modelo. La clave se escribe solo en `.env`, que está ignorado por Git. Después reinicia la app.
+
+También puedes editar `.env` a mano:
+
+- `OPENCODE_ZEN_API_KEY` y `OPENCODE_ZEN_MODEL` para OpenCode Zen. La clave se crea en `https://opencode.ai/console` y los ids están en `https://opencode.ai/inference/v1/models`.
 - `OPENROUTER_API_KEY` y `GREEK_OPENROUTER_MODEL` para OpenRouter.
 - `GREEK_OLLAMA_MODEL` para fijar un modelo de Ollama. Si no se define, Greek usa el primero que detecte.
 - `GREEK_BIND=0.0.0.0:4319` para aceptar conexiones del iPhone en la misma Wi-Fi.

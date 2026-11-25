@@ -179,6 +179,9 @@ async fn providers_from_env(http: &reqwest::Client) -> Providers {
         openrouter_model: env_nonempty("GREEK_OPENROUTER_MODEL"),
         ollama_model: configured_ollama.clone(),
         ollama_available: false,
+        opencode_key: None,
+        opencode_model: None,
+        opencode_base: "https://opencode.ai/zen/v1".to_string(),
     };
 
     let probe = http
@@ -216,6 +219,51 @@ async fn providers_from_env(http: &reqwest::Client) -> Providers {
                 } else if let Some(first) = names.first() {
                     providers.ollama_model = Some(first.clone());
                     providers.ollama_available = true;
+                }
+            }
+        }
+    }
+
+    let zen_key = env_nonempty("OPENCODE_ZEN_API_KEY")
+        .or_else(|| env_nonempty("OPENCODE_API_KEY"));
+    let zen_base = env_nonempty("OPENCODE_ZEN_BASE")
+        .unwrap_or_else(|| "https://opencode.ai/zen/v1".to_string());
+    let configured_zen = env_nonempty("OPENCODE_ZEN_MODEL");
+    providers.opencode_key = zen_key.clone();
+    providers.opencode_base = zen_base.clone();
+
+    if let Some(key) = zen_key {
+        let models_url = format!("{}/models", zen_base.trim_end_matches('/'));
+        let probe = http
+            .get(models_url)
+            .bearer_auth(&key)
+            .timeout(Duration::from_secs(8))
+            .send()
+            .await;
+
+        if let Ok(response) = probe {
+            if response.status().is_success() {
+                if let Ok(body) = response.json::<Value>().await {
+                    let names: Vec<String> = body
+                        .get("data")
+                        .and_then(Value::as_array)
+                        .map(|models| {
+                            models
+                                .iter()
+                                .filter_map(|model| model.get("id").and_then(Value::as_str))
+                                .map(str::to_string)
+                                .collect()
+                        })
+                        .unwrap_or_default();
+
+                    if let Some(model) = configured_zen {
+                        let present = names.iter().any(|name| name == &model);
+                        if present || names.is_empty() {
+                            providers.opencode_model = Some(model);
+                        }
+                    } else if let Some(first) = names.first() {
+                        providers.opencode_model = Some(first.clone());
+                    }
                 }
             }
         }

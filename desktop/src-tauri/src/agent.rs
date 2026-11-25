@@ -31,7 +31,7 @@ fn is_greeting(lower: &str) -> bool {
 }
 
 fn local_chat_reply() -> String {
-    "Estoy en modo local, sin un modelo de lenguaje conectado. Puedo consultar el clima real con Open-Meteo, crear archivos en el escritorio virtual y ejecutar comandos seguros en la terminal aislada. Para preguntas abiertas, conecta Ollama en el puerto 11434 o define OPENROUTER_API_KEY y GREEK_OPENROUTER_MODEL en el archivo .env.".to_string()
+    "Estoy en modo local, sin un modelo de lenguaje conectado. Puedo consultar el clima real con Open-Meteo, crear archivos en el escritorio virtual y ejecutar comandos seguros en la terminal aislada. Para preguntas abiertas, configura OPENCODE_ZEN_API_KEY y OPENCODE_ZEN_MODEL, o usa Ollama y OpenRouter en el archivo .env.".to_string()
 }
 
 fn greeting_reply() -> String {
@@ -130,6 +130,51 @@ async fn call_ollama(
     Ok(text)
 }
 
+async fn call_opencode_zen(
+    client: &reqwest::Client,
+    key: &str,
+    model: &str,
+    base: &str,
+    messages: Vec<Value>,
+) -> Result<String> {
+    let url = format!("{}/chat/completions", base.trim_end_matches('/'));
+    let response = client
+        .post(url)
+        .bearer_auth(key)
+        .json(&json!({
+            "model": model,
+            "messages": messages,
+            "max_tokens": 700,
+            "temperature": 0.4
+        }))
+        .timeout(Duration::from_secs(45))
+        .send()
+        .await
+        .context("No se pudo contactar OpenCode Zen.")?
+        .error_for_status()
+        .context("OpenCode Zen rechazó la solicitud.")?;
+
+    let body: Value = response
+        .json()
+        .await
+        .context("OpenCode Zen devolvió una respuesta inválida.")?;
+    let text = body
+        .get("choices")
+        .and_then(Value::as_array)
+        .and_then(|choices| choices.first())
+        .and_then(|choice| choice.get("message"))
+        .and_then(|message| message.get("content"))
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .trim()
+        .to_string();
+
+    if text.is_empty() {
+        bail!("OpenCode Zen devolvió una respuesta vacía.");
+    }
+    Ok(text)
+}
+
 async fn ask_provider(
     core: &Core,
     choice: ProviderChoice,
@@ -145,6 +190,10 @@ async fn ask_provider(
         ProviderChoice::Ollama { model } => {
             let text = call_ollama(&core.http, &model, messages).await?;
             Ok((text, format!("ollama · {}", short_model(&model))))
+        }
+        ProviderChoice::OpenCodeZen { key, model, base } => {
+            let text = call_opencode_zen(&core.http, &key, &model, &base, messages).await?;
+            Ok((text, format!("opencode zen · {}", short_model(&model))))
         }
     }
 }

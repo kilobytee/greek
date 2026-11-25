@@ -8,12 +8,29 @@ use tokio::sync::broadcast;
 use tracing::warn;
 use uuid::Uuid;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Providers {
     pub openrouter_key: Option<String>,
     pub openrouter_model: Option<String>,
     pub ollama_model: Option<String>,
     pub ollama_available: bool,
+    pub opencode_key: Option<String>,
+    pub opencode_model: Option<String>,
+    pub opencode_base: String,
+}
+
+impl Default for Providers {
+    fn default() -> Self {
+        Self {
+            openrouter_key: None,
+            openrouter_model: None,
+            ollama_model: None,
+            ollama_available: false,
+            opencode_key: None,
+            opencode_model: None,
+            opencode_base: "https://opencode.ai/zen/v1".to_string(),
+        }
+    }
 }
 
 impl Providers {
@@ -25,6 +42,15 @@ impl Providers {
             _ => None,
         }
     }
+
+    pub fn opencode_zen(&self) -> Option<(String, String, String)> {
+        match (&self.opencode_key, &self.opencode_model) {
+            (Some(key), Some(model)) if !key.is_empty() && !model.is_empty() => {
+                Some((key.clone(), model.clone(), self.opencode_base.clone()))
+            }
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -32,6 +58,7 @@ pub enum ProviderChoice {
     Local,
     Ollama { model: String },
     OpenRouter { key: String, model: String },
+    OpenCodeZen { key: String, model: String, base: String },
 }
 
 pub struct Inner {
@@ -94,6 +121,18 @@ fn build_models(providers: &Providers) -> Vec<ModelOption> {
         "define OPENROUTER_API_KEY".to_string()
     };
 
+    let zen_available = providers.opencode_zen().is_some();
+    let zen_detail = if zen_available {
+        providers
+            .opencode_model
+            .clone()
+            .unwrap_or_else(|| "configurado".to_string())
+    } else if providers.opencode_key.is_some() {
+        "define OPENCODE_ZEN_MODEL".to_string()
+    } else {
+        "define OPENCODE_ZEN_API_KEY".to_string()
+    };
+
     vec![
         ModelOption {
             id: "auto".into(),
@@ -122,6 +161,13 @@ fn build_models(providers: &Providers) -> Vec<ModelOption> {
             provider: "OpenRouter".into(),
             available: openrouter_available,
             detail: openrouter_detail,
+        },
+        ModelOption {
+            id: "opencode-zen".into(),
+            label: "OpenCode Zen".into(),
+            provider: "OpenCode".into(),
+            available: zen_available,
+            detail: zen_detail,
         },
     ]
 }
@@ -553,6 +599,7 @@ impl Core {
 
     pub fn resolve_model(&self, requested: &str) -> (ProviderChoice, String) {
         let openrouter = self.providers.openrouter();
+        let zen = self.providers.opencode_zen();
         let ollama = if self.providers.ollama_available {
             self.providers.ollama_model.clone()
         } else {
@@ -565,6 +612,13 @@ impl Core {
                 Some((key, model)) => (ProviderChoice::OpenRouter { key, model }, "openrouter".into()),
                 None => (ProviderChoice::Local, "local · respaldo".into()),
             },
+            "opencode-zen" => match zen {
+                Some((key, model, base)) => (
+                    ProviderChoice::OpenCodeZen { key, model, base },
+                    "opencode zen".into(),
+                ),
+                None => (ProviderChoice::Local, "local · respaldo".into()),
+            },
             "ollama" => match ollama {
                 Some(model) => (ProviderChoice::Ollama { model }, "ollama".into()),
                 None => (ProviderChoice::Local, "local · respaldo".into()),
@@ -572,6 +626,11 @@ impl Core {
             _ => {
                 if let Some((key, model)) = openrouter {
                     (ProviderChoice::OpenRouter { key, model }, "auto → openrouter".into())
+                } else if let Some((key, model, base)) = zen {
+                    (
+                        ProviderChoice::OpenCodeZen { key, model, base },
+                        "auto → opencode zen".into(),
+                    )
                 } else if let Some(model) = ollama {
                     (ProviderChoice::Ollama { model }, "auto → ollama".into())
                 } else {
