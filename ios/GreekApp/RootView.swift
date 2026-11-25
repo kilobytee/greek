@@ -13,8 +13,12 @@ struct RootView: View {
                 ChatHeader(
                     title: headerTitle,
                     modelLabel: model.activeModelLabel,
-                    onMenu: { model.isMenuPresented = true },
-                    onModel: { model.isMenuPresented = true }
+                    models: model.availableModels,
+                    selectedModel: model.activeChat?.model ?? "auto",
+                    onNewChat: model.newChat,
+                    onOpenMenu: { model.isMenuPresented = true },
+                    onPair: { model.isPairingPresented = true },
+                    onModelSelect: model.setModel
                 )
 
                 ScrollViewReader { proxy in

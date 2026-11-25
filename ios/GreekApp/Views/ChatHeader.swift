@@ -3,8 +3,12 @@ import SwiftUI
 struct ChatHeader: View {
     let title: String
     let modelLabel: String
-    let onMenu: () -> Void
-    let onModel: () -> Void
+    let models: [ModelOption]
+    let selectedModel: String
+    let onNewChat: () -> Void
+    let onOpenMenu: () -> Void
+    let onPair: () -> Void
+    let onModelSelect: (String) -> Void
 
     var body: some View {
         ZStack {
@@ -15,7 +19,25 @@ struct ChatHeader: View {
                 .padding(.horizontal, 92)
 
             HStack(spacing: 8) {
-                Button(action: onMenu) {
+                Menu {
+                    Button {
+                        onNewChat()
+                    } label: {
+                        Label("Nuevo chat", systemImage: "square.and.pencil")
+                    }
+
+                    Button {
+                        onOpenMenu()
+                    } label: {
+                        Label("Chats y modelo", systemImage: "line.3.horizontal")
+                    }
+
+                    Button {
+                        onPair()
+                    } label: {
+                        Label("Conectar al PC", systemImage: "wifi")
+                    }
+                } label: {
                     Image(systemName: "line.3.horizontal")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Color.greekText)
@@ -23,10 +45,24 @@ struct ChatHeader: View {
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Menú")
+                .greekGlassButton()
 
                 Spacer(minLength: 0)
 
-                Button(action: onModel) {
+                Menu {
+                    ForEach(models) { option in
+                        Button {
+                            onModelSelect(option.id)
+                        } label: {
+                            if option.id == selectedModel {
+                                Label(option.label, systemImage: "checkmark")
+                            } else {
+                                Text(option.label)
+                            }
+                        }
+                        .disabled(!option.available)
+                    }
+                } label: {
                     HStack(spacing: 5) {
                         Text(modelLabel)
                             .font(.greek(12, weight: .medium))
@@ -37,8 +73,7 @@ struct ChatHeader: View {
                     .foregroundStyle(Color.greekText)
                     .padding(.horizontal, 11)
                     .frame(minHeight: 44)
-                    .background(Capsule().fill(Color.greekSurface))
-                    .overlay(Capsule().stroke(Color.greekBorderStrong, lineWidth: 1))
+                    .greekCapsuleSurface()
                 }
                 .accessibilityLabel("Modelo: \(modelLabel)")
             }

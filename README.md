@@ -144,7 +144,7 @@ Luego abre el menú de la app, elige **Conectar al PC** y pega la dirección y e
 | `cargo build` | Correcto |
 | Prueba real del núcleo | Clima de Bogotá con Open-Meteo, archivo `clima-bogota.md`, terminal `date`, token inválido cerrado con 4401 |
 | App Tauri | Compilada y abierta en Windows |
-| App iOS | Compilada en GitHub Actions con Xcode 16 en `macos-15`, para simulador iOS, run `45679739998` |
+| App iOS | Compilada en GitHub Actions con Xcode 26 en `macos-26`, para simulador iOS |
 
 Comandos de la tabla:
 

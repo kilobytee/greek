@@ -43,6 +43,7 @@ struct StatusCard: View {
                             .background(Capsule().fill(Color.greekActive))
                     }
                     .accessibilityLabel(isPaired ? "Reconectar con el PC" : "Conectar con el PC")
+                    .greekGlassButton()
                 }
             }
 
@@ -83,26 +84,13 @@ struct StatusCard: View {
                 }
                 .foregroundStyle(desktop == nil ? Color.greekMuted : Color.greekText)
                 .frame(maxWidth: .infinity, minHeight: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(Color.greekActive)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .stroke(Color.greekBorderStrong, lineWidth: 1)
-                )
+                .greekSurface(cornerRadius: 9)
             }
             .disabled(desktop == nil)
             .accessibilityLabel("Ver la pantalla del escritorio virtual")
+            .greekGlassButton()
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.greekSurface)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.greekBorder, lineWidth: 1)
-        )
+        .greekSurface(cornerRadius: 16)
     }
 }

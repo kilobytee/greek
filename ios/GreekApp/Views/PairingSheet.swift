@@ -139,6 +139,7 @@ struct PairingSheet: View {
                 }
             }
         }
+        .greekGlassButton()
         .presentationDetents([.large])
         .presentationBackground(Color.greekBg)
         .preferredColorScheme(.dark)
