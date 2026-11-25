@@ -144,7 +144,7 @@ Luego abre el menú de la app, elige **Conectar al PC** y pega la dirección y e
 | `cargo build` | Correcto |
 | Prueba real del núcleo | Clima de Bogotá con Open-Meteo, archivo `clima-bogota.md`, terminal `date`, token inválido cerrado con 4401 |
 | App Tauri | Compilada y abierta en Windows |
-| App iOS | Código completo, sin compilar: no hay toolchain de Swift en Windows |
+| App iOS | Compilada en GitHub Actions con Xcode 16 en `macos-15`, para simulador iOS, run `45679739998` |
 
 Comandos de la tabla:
 
@@ -156,10 +156,21 @@ cargo test --manifest-path src-tauri/Cargo.toml
 cargo build --manifest-path src-tauri/Cargo.toml
 ```
 
+## Integración continua
+
+El repositorio está en `https://github.com/kilobytee/greek`. El workflow `.github/workflows/ios.yml` compila la app iOS en cada cambio dentro de `ios/`:
+
+1. Instala XcodeGen con Homebrew.
+2. Genera `Greek.xcodeproj` desde `project.yml`.
+3. Ejecuta `xcodebuild` para simulador iOS sin firma.
+4. Sube `xcodebuild.log` como artefacto si la compilación falla.
+
+Los resultados están en `https://github.com/kilobytee/greek/actions`. Los runners estándar son gratis en repositorios públicos.
+
 ## Límites conocidos
 
 - Sin un modelo conectado, las respuestas abiertas usan reglas locales y no un LLM general.
 - Los modelos gratuitos de OpenRouter cambian con el tiempo; define el identificador exacto vigente.
 - Ollama debe estar en marcha antes de abrir Greek para que aparezca como disponible.
-- La app iOS se escribió en Windows y aún no se ha compilado en Xcode. Trátala como código completo pendiente de verificación en un Mac.
+- La app iOS se compila en CI para simulador, pero aún no se ha ejecutado en un iPhone físico. Para instalarla hace falta una cuenta de Apple y confiar en el dispositivo.
 - **Ver pantalla** muestra el escritorio virtual, no la pantalla real del equipo.

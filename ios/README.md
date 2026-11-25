@@ -60,5 +60,5 @@ La dirección se guarda en `UserDefaults` y el token en el Llavero del iPhone (`
 
 - La excepción de ATS (`NSAllowsArbitraryLoads`) existe para poder hablar por HTTP con el PC en la red local. Si más adelante usas TLS, quítala.
 - **Ver pantalla** muestra el escritorio virtual que mantiene el núcleo, no una captura de la pantalla real del PC.
-- Este código se escribió en Windows, donde no hay toolchain de Swift. No se ha compilado ni ejecutado en Xcode todavía; trátalo como entrega de código completa pendiente de verificación en un Mac.
+- Este código se escribió en Windows, donde no hay toolchain de Swift. La compilación se verifica en GitHub Actions con Xcode en macOS, para simulador iOS. Todavía no se ha ejecutado en un iPhone físico.
 - La app no incluye claves de IA. El proveedor se elige en el escritorio y el iPhone solo muestra el modelo activo.
