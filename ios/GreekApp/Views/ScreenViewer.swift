@@ -33,7 +33,6 @@ struct ScreenViewer: View {
                             .overlay(Circle().stroke(Color.greekBorderStrong, lineWidth: 1))
                     }
                     .accessibilityLabel("Cerrar")
-                    .greekGlassButton()
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)

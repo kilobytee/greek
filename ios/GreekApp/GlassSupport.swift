@@ -1,6 +1,7 @@
 import SwiftUI
 
-// Liquid Glass con degradacion al diseno plano en iOS 17 y 18.
+// Liquid Glass solo en entradas y controles de seleccion.
+// En iOS 17 y 18 se mantiene el diseno plano original.
 
 private struct GreekSurfaceModifier: ViewModifier {
     let cornerRadius: CGFloat
@@ -22,7 +23,7 @@ private struct GreekSurfaceModifier: ViewModifier {
     }
 }
 
-private struct GreekCapsuleModifier: ViewModifier {
+private struct GreekSelectionModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26, *) {
             content.glassEffect()
@@ -34,46 +35,12 @@ private struct GreekCapsuleModifier: ViewModifier {
     }
 }
 
-private struct GreekSendSurfaceModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            content.glassEffect(in: .circle)
-        } else {
-            content.background(Circle().fill(Color.greekText))
-        }
-    }
-}
-
-private struct GreekButtonModifier: ViewModifier {
-    let prominent: Bool
-
-    func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            if prominent {
-                content.buttonStyle(GlassProminentButtonStyle())
-            } else {
-                content.buttonStyle(GlassButtonStyle())
-            }
-        } else {
-            content
-        }
-    }
-}
-
 extension View {
-    func greekSurface(cornerRadius: CGFloat = 16) -> some View {
+    func greekInputSurface(cornerRadius: CGFloat = 16) -> some View {
         modifier(GreekSurfaceModifier(cornerRadius: cornerRadius))
     }
 
-    func greekCapsuleSurface() -> some View {
-        modifier(GreekCapsuleModifier())
-    }
-
-    func greekSendSurface() -> some View {
-        modifier(GreekSendSurfaceModifier())
-    }
-
-    func greekGlassButton(prominent: Bool = false) -> some View {
-        modifier(GreekButtonModifier(prominent: prominent))
+    func greekSelectionSurface() -> some View {
+        modifier(GreekSelectionModifier())
     }
 }

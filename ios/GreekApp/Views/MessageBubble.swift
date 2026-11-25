@@ -89,7 +89,8 @@ struct ToolChipRow: View {
                 .foregroundStyle(Color.greekMuted)
                 .padding(.horizontal, 8)
                 .frame(height: 24)
-                .greekCapsuleSurface()
+                .background(Capsule().fill(Color.greekSurface))
+                .overlay(Capsule().stroke(Color.greekBorderStrong, lineWidth: 1))
             }
         }
     }

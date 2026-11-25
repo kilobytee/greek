@@ -45,7 +45,6 @@ struct ChatHeader: View {
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Menú")
-                .greekGlassButton()
 
                 Spacer(minLength: 0)
 
@@ -73,7 +72,7 @@ struct ChatHeader: View {
                     .foregroundStyle(Color.greekText)
                     .padding(.horizontal, 11)
                     .frame(minHeight: 44)
-                    .greekCapsuleSurface()
+                    .greekSelectionSurface()
                 }
                 .accessibilityLabel("Modelo: \(modelLabel)")
             }

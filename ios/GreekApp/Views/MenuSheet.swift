@@ -130,7 +130,6 @@ struct MenuSheet: View {
                 }
             }
         }
-        .greekGlassButton()
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.greekBg)
         .preferredColorScheme(.dark)

@@ -25,18 +25,17 @@ struct ComposerBar: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Color.greekBg)
                     .frame(width: 36, height: 36)
-                    .greekSendSurface()
+                    .background(Circle().fill(Color.greekText))
                     .frame(width: 44, height: 44)
                     .contentShape(Circle())
             }
             .disabled(!canSend)
             .opacity(canSend ? 1 : 0.35)
             .accessibilityLabel("Enviar mensaje")
-            .greekGlassButton(prominent: true)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
-        .greekSurface(cornerRadius: 24)
+        .greekInputSurface(cornerRadius: 24)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
     }

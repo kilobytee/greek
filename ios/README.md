@@ -61,5 +61,5 @@ La dirección se guarda en `UserDefaults` y el token en el Llavero del iPhone (`
 - La excepción de ATS (`NSAllowsArbitraryLoads`) existe para poder hablar por HTTP con el PC en la red local. Si más adelante usas TLS, quítala.
 - **Ver pantalla** muestra el escritorio virtual que mantiene el núcleo, no una captura de la pantalla real del PC.
 - Este código se escribió en Windows, donde no hay toolchain de Swift. La compilación se verifica en GitHub Actions con Xcode en macOS, para simulador iOS. Todavía no se ha ejecutado en un iPhone físico.
-- La interfaz usa controles nativos (`Menu`, estilos de botón del sistema) y Liquid Glass en iOS 26 mediante `GlassSupport.swift`. En iOS 17 y 18 conserva el diseño plano original.
+- La interfaz usa `Menu` nativo para las acciones y el selector de modelo. Liquid Glass se limita a la barra de entrada y al selector de modelo en iOS 26 mediante `GlassSupport.swift`. Menús de acción, botones y tarjetas conservan el diseño plano. En iOS 17 y 18 todo conserva el diseño plano original.
 - La app no incluye claves de IA. El proveedor se elige en el escritorio y el iPhone solo muestra el modelo activo.
