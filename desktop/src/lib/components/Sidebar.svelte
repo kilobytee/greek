@@ -158,8 +158,6 @@
 
 	@media (max-width: 980px) {
 		.sidebar {
-			width: 216px;
-			min-width: 216px;
 			padding-inline: 12px;
 		}
 	}

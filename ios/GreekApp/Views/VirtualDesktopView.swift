@@ -7,6 +7,7 @@ struct VirtualDesktopView: View {
     var body: some View {
         GeometryReader { geometry in
             let scale = min(geometry.size.width / 900, geometry.size.height / 600)
+            let originX = (geometry.size.width - 900 * scale) / 2
 
             ZStack(alignment: .topLeading) {
                 Color.greekBg
@@ -19,19 +20,24 @@ struct VirtualDesktopView: View {
                             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                     } else {
                         ForEach(desktop.windows) { window in
+                            let width = max(CGFloat(window.width) * scale, 46)
+                            let height = max(CGFloat(window.height) * scale, 30)
                             DesktopWindowView(
                                 window: window,
                                 desktop: desktop,
                                 detailed: detailed,
                                 isActive: window.id == desktop.activeWindowId
                             )
-                            .frame(
-                                width: max(CGFloat(window.width) * scale, 46),
-                                height: max(CGFloat(window.height) * scale, 30)
-                            )
+                            .frame(width: width, height: height)
                             .offset(
-                                x: min(max(0, CGFloat(window.x) * scale), max(0, geometry.size.width - 46)),
-                                y: min(max(0, CGFloat(window.y) * scale), max(0, geometry.size.height - 30))
+                                x: min(
+                                    max(originX, originX + CGFloat(window.x) * scale),
+                                    max(originX, geometry.size.width - width)
+                                ),
+                                y: min(
+                                    max(0, CGFloat(window.y) * scale),
+                                    max(0, geometry.size.height - height)
+                                )
                             )
                         }
                     }
@@ -68,7 +74,7 @@ private struct DesktopWindowView: View {
 
                 if detailed {
                     Text(window.title)
-                        .font(.greek(8, weight: .medium))
+                        .font(.greek(11, weight: .medium))
                         .foregroundStyle(Color.greekMuted)
                         .lineLimit(1)
                         .padding(.leading, 3)
@@ -77,7 +83,7 @@ private struct DesktopWindowView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 4)
-            .frame(height: detailed ? 16 : 9)
+            .frame(height: detailed ? 22 : 9)
             .background(Color.greekActive)
 
             Rectangle()
@@ -102,13 +108,13 @@ private struct DesktopWindowView: View {
             if detailed, let browser = desktop.browser {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(browser.url)
-                        .font(.greekMono(6))
+                        .font(.greekMono(9))
                         .foregroundStyle(Color.greekMuted)
                         .lineLimit(1)
 
                     ForEach(Array(browser.lines.prefix(4).indices), id: \.self) { index in
                         Text(browser.lines[index])
-                            .font(.greek(7))
+                            .font(.greek(10))
                             .foregroundStyle(Color.greekText.opacity(0.8))
                             .lineLimit(1)
                     }
@@ -123,7 +129,7 @@ private struct DesktopWindowView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(desktop.files.prefix(4)) { file in
                         Text(file.name)
-                            .font(.greekMono(6))
+                            .font(.greekMono(9))
                             .foregroundStyle(Color.greekText.opacity(0.8))
                             .lineLimit(1)
                     }
@@ -138,7 +144,7 @@ private struct DesktopWindowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     ForEach(Array(desktop.terminal.suffix(5).indices), id: \.self) { index in
                         Text(desktop.terminal[index])
-                            .font(.greekMono(6))
+                            .font(.greekMono(9))
                             .foregroundStyle(Color.greekText.opacity(0.7))
                             .lineLimit(1)
                     }

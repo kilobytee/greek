@@ -15,6 +15,7 @@ final class GreekAppModel: ObservableObject {
     private let client = GreekClient()
     private let defaults = UserDefaults.standard
     private static let urlKey = "greek.server.url"
+    private var pendingText: String?
 
     init() {
         pairingURL = UserDefaults.standard.string(forKey: Self.urlKey) ?? ""
@@ -24,9 +25,24 @@ final class GreekAppModel: ObservableObject {
             self?.status = status
         }
         client.onSnapshot = { [weak self] snapshot in
-            self?.snapshot = snapshot
+            guard let self else { return }
+            self.snapshot = snapshot
+            if let pending = self.pendingText,
+               let chat = snapshot.chats.first(where: { $0.id == snapshot.activeChatId }),
+               chat.messages.contains(where: { $0.role == .user && $0.text == pending }) {
+                self.draft = ""
+                self.pendingText = nil
+            }
         }
         client.onServerError = { [weak self] message in
+            guard let self else { return }
+            if let pending = self.pendingText {
+                self.draft = pending
+                self.pendingText = nil
+            }
+            self.errorMessage = message
+        }
+        client.onAuthError = { [weak self] message in
             self?.errorMessage = message
         }
 
@@ -78,10 +94,13 @@ final class GreekAppModel: ObservableObject {
             return "Pega el token que muestra el escritorio."
         }
 
+        guard KeychainStore.saveToken(token) else {
+            return "No se pudo guardar el token en el Llavero."
+        }
+
         pairingURL = url
         pairingToken = token
         defaults.set(url, forKey: Self.urlKey)
-        KeychainStore.saveToken(token)
         client.connect(PairingConfig(urlString: url, token: token))
         return nil
     }
@@ -93,11 +112,15 @@ final class GreekAppModel: ObservableObject {
     func disconnect() {
         client.disconnect()
         snapshot = nil
+        errorMessage = nil
+        pendingText = nil
     }
 
     func forgetPairing() {
         client.disconnect()
         snapshot = nil
+        errorMessage = nil
+        pendingText = nil
         defaults.removeObject(forKey: Self.urlKey)
         KeychainStore.deleteToken()
         pairingURL = ""
@@ -107,29 +130,39 @@ final class GreekAppModel: ObservableObject {
     func send() {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-
         guard status == .online else {
             errorMessage = "El PC no está conectado."
             return
         }
 
+        pendingText = text
         client.send(["type": "sendMessage", "text": text])
-        draft = ""
     }
 
     func newChat() {
+        guard requireOnline() else { return }
         client.send(["type": "newChat"])
     }
 
     func selectChat(_ id: String) {
+        guard requireOnline() else { return }
         client.send(["type": "selectChat", "chatId": id])
     }
 
     func setModel(_ id: String) {
+        guard requireOnline() else { return }
         client.send(["type": "setModel", "model": id])
     }
 
     func openScreen() {
         isScreenPresented = true
+    }
+
+    private func requireOnline() -> Bool {
+        guard status == .online else {
+            errorMessage = "El PC no está conectado."
+            return false
+        }
+        return true
     }
 }

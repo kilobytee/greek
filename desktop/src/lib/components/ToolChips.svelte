@@ -29,8 +29,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
+		max-width: 100%;
 		height: 30px;
 		padding: 0 11px;
+		overflow: hidden;
 		border: 1px solid var(--border-strong);
 		border-radius: 999px;
 		color: #d4d4d8;
@@ -44,6 +46,9 @@
 	}
 
 	.detail {
+		min-width: 0;
+		overflow: hidden;
 		color: #d4d4d8;
+		text-overflow: ellipsis;
 	}
 </style>

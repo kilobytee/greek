@@ -13,13 +13,14 @@ enum KeychainStore {
         ]
     }
 
-    static func saveToken(_ token: String) {
+    @discardableResult
+    static func saveToken(_ token: String) -> Bool {
         SecItemDelete(baseQuery as CFDictionary)
 
         var attributes = baseQuery
         attributes[kSecValueData as String] = Data(token.utf8)
         attributes[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(attributes as CFDictionary, nil)
+        return SecItemAdd(attributes as CFDictionary, nil) == errSecSuccess
     }
 
     static func loadToken() -> String? {

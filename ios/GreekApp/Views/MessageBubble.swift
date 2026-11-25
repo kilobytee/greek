@@ -77,7 +77,11 @@ struct ToolChipRow: View {
     let chips: [ToolChip]
 
     var body: some View {
-        HStack(spacing: 6) {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 110), spacing: 6)],
+            alignment: .leading,
+            spacing: 6
+        ) {
             ForEach(chips) { chip in
                 HStack(spacing: 5) {
                     Image(systemName: icon(for: chip.label))

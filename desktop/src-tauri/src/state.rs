@@ -278,6 +278,7 @@ impl Core {
                     }
                     inner.active_chat_id = chat_id;
                 }
+                self.persist();
                 self.broadcast();
                 None
             }
@@ -407,6 +408,7 @@ impl Core {
                     }
                     inner.desktop.selected_file = Some(file);
                 }
+                self.persist();
                 self.broadcast();
                 None
             }

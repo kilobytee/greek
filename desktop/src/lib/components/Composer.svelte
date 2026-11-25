@@ -76,6 +76,10 @@
 	}
 
 	function onMenuKeydown(event: KeyboardEvent) {
+		if (event.key === 'Tab') {
+			closeMenu();
+			return;
+		}
 		const items = Array.from(
 			menuEl?.querySelectorAll<HTMLButtonElement>('button[role="menuitemradio"]:not(:disabled)') ??
 				[]
@@ -145,7 +149,7 @@
 					aria-controls="model-menu"
 					onclick={toggleMenu}
 				>
-					{modelLabel}
+					<span class="model-pill-label">{modelLabel}</span>
 				</button>
 				<button
 					type="button"
@@ -277,9 +281,14 @@
 		background: var(--surface);
 		color: var(--text);
 		font-size: 13.5px;
-		text-overflow: ellipsis;
 		white-space: nowrap;
 		transition: background 120ms ease, border-color 120ms ease;
+	}
+
+	.model-pill-label {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.model-pill:hover,

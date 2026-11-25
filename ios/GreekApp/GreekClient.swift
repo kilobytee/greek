@@ -5,6 +5,7 @@ final class GreekClient {
     var onSnapshot: ((Snapshot) -> Void)?
     var onServerError: ((String) -> Void)?
     var onStatus: ((ConnectionStatus) -> Void)?
+    var onAuthError: ((String) -> Void)?
 
     private let session: URLSession
     private var task: URLSessionWebSocketTask?
@@ -13,6 +14,8 @@ final class GreekClient {
     private var config: PairingConfig?
     private var attempts = 0
     private var stopped = true
+    private var gotSnapshot = false
+    private var connectWatchdog: Task<Void, Never>?
 
     init() {
         let configuration = URLSessionConfiguration.default
@@ -36,6 +39,7 @@ final class GreekClient {
         let task = session.webSocketTask(with: url)
         self.task = task
         task.resume()
+        startWatchdog()
         startReceiving()
     }
 
@@ -45,8 +49,21 @@ final class GreekClient {
         connect(config)
     }
 
+    private func startWatchdog() {
+        connectWatchdog?.cancel()
+        gotSnapshot = false
+        connectWatchdog = Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            guard !Task.isCancelled, !self.gotSnapshot, !self.stopped else { return }
+            self.fail()
+        }
+    }
+
     func disconnect() {
         stopped = true
+        connectWatchdog?.cancel()
+        connectWatchdog = nil
         receiveTask?.cancel()
         receiveTask = nil
         reconnectTask?.cancel()
@@ -77,6 +94,7 @@ final class GreekClient {
 
     private func stopKeepingConfig() {
         stopped = true
+        connectWatchdog?.cancel()
         receiveTask?.cancel()
         receiveTask = nil
         reconnectTask?.cancel()
@@ -120,6 +138,14 @@ final class GreekClient {
                     }
                 } catch {
                     if Task.isCancelled { return }
+                    if task.closeCode.rawValue == 4401 {
+                        self.stopped = true
+                        self.config = nil
+                        self.connectWatchdog?.cancel()
+                        self.onStatus?(.offline)
+                        self.onAuthError?("Token inválido. Vuelve a vincular el PC.")
+                        return
+                    }
                     self.fail()
                     return
                 }
@@ -138,6 +164,8 @@ final class GreekClient {
         case "snapshot":
             if let snapshot = envelope.snapshot {
                 attempts = 0
+                gotSnapshot = true
+                connectWatchdog?.cancel()
                 onStatus?(.online)
                 onSnapshot?(snapshot)
             }

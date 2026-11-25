@@ -50,6 +50,8 @@ function websocketUrl(info: ConnectionInfo): string {
 export function startConnection(handlers: TransportHandlers): GreekTransport {
 	let socket: WebSocket | null = null;
 	let closed = false;
+	let connecting = false;
+	let generation = 0;
 	let retryTimer: ReturnType<typeof setTimeout> | null = null;
 	let heartbeat: ReturnType<typeof setInterval> | null = null;
 	let attempts = 0;
@@ -71,40 +73,55 @@ export function startConnection(handlers: TransportHandlers): GreekTransport {
 	};
 
 	const connect = async () => {
-		if (closed) return;
-		if (retryTimer) clearTimeout(retryTimer);
-		retryTimer = null;
+		if (closed || connecting) return;
+		connecting = true;
+		const token = ++generation;
+		clearTimers();
 		handlers.onStatus('connecting');
 
 		let info: ConnectionInfo;
 		try {
 			info = await resolveConnection();
 		} catch (error) {
+			connecting = false;
+			if (closed || token !== generation) return;
 			scheduleRetry(error instanceof Error ? error.message : 'No se pudo conectar con el núcleo.');
 			return;
 		}
 
-		if (closed) return;
+		connecting = false;
+		if (closed || token !== generation) return;
 		handlers.onConnectionInfo?.(info);
 
+		let next: WebSocket;
 		try {
-			socket = new WebSocket(websocketUrl(info));
+			next = new WebSocket(websocketUrl(info));
 		} catch {
+			if (closed || token !== generation) return;
 			scheduleRetry('La dirección del núcleo no es válida.');
 			return;
 		}
 
-		socket.addEventListener('open', () => {
+		if (socket && socket !== next) socket.close(1000, 'reemplazo');
+		socket = next;
+		const current = next;
+
+		current.addEventListener('open', () => {
+			if (closed || token !== generation || current !== socket) {
+				current.close();
+				return;
+			}
 			attempts = 0;
 			handlers.onStatus('online');
 			heartbeat = setInterval(() => {
-				if (socket?.readyState === WebSocket.OPEN) {
-					socket.send(JSON.stringify({ type: 'ping' }));
+				if (current.readyState === WebSocket.OPEN) {
+					current.send(JSON.stringify({ type: 'ping' }));
 				}
 			}, 25_000);
 		});
 
-		socket.addEventListener('message', (event) => {
+		current.addEventListener('message', (event) => {
+			if (closed || token !== generation || current !== socket) return;
 			let parsed: ServerEvent;
 			try {
 				parsed = JSON.parse(String(event.data)) as ServerEvent;
@@ -115,7 +132,9 @@ export function startConnection(handlers: TransportHandlers): GreekTransport {
 			if (parsed.type === 'error') handlers.onError(parsed.message);
 		});
 
-		socket.addEventListener('close', (event) => {
+		current.addEventListener('close', (event) => {
+			if (current !== socket) return;
+			connecting = false;
 			if (heartbeat) clearInterval(heartbeat);
 			heartbeat = null;
 			socket = null;
@@ -128,7 +147,7 @@ export function startConnection(handlers: TransportHandlers): GreekTransport {
 			scheduleRetry();
 		});
 
-		socket.addEventListener('error', () => {
+		current.addEventListener('error', () => {
 			// El evento close se encarga de reintentar.
 		});
 	};
@@ -143,6 +162,8 @@ export function startConnection(handlers: TransportHandlers): GreekTransport {
 
 	const close = () => {
 		closed = true;
+		connecting = false;
+		generation += 1;
 		clearTimers();
 		socket?.close(1000, 'cierre');
 		socket = null;
@@ -150,6 +171,8 @@ export function startConnection(handlers: TransportHandlers): GreekTransport {
 
 	const retry = () => {
 		clearTimers();
+		connecting = false;
+		generation += 1;
 		attempts = 0;
 		if (!closed) void connect();
 	};

@@ -523,6 +523,10 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
+		.app > :global(.sidebar) {
+			display: none;
+		}
+
 		.center > :global(.chat-header) {
 			display: none;
 		}

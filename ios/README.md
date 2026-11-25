@@ -58,7 +58,7 @@ La dirección se guarda en `UserDefaults` y el token en el Llavero del iPhone (`
 
 ## Notas y límites
 
-- La excepción de ATS (`NSAllowsArbitraryLoads`) existe para poder hablar por HTTP con el PC en la red local. Si más adelante usas TLS, quítala.
+- La excepción de ATS se limita a `NSAllowsLocalNetworking`, necesaria para hablar por HTTP con el PC en la red local. No se permite HTTP arbitrario. Si más adelante usas TLS, quítala.
 - **Ver pantalla** muestra el escritorio virtual que mantiene el núcleo, no una captura de la pantalla real del PC.
 - Este código se escribió en Windows, donde no hay toolchain de Swift. La compilación se verifica en GitHub Actions con Xcode en macOS, para simulador iOS. Todavía no se ha ejecutado en un iPhone físico.
 - La interfaz usa `Menu` nativo para las acciones y el selector de modelo. Liquid Glass se limita a la barra de entrada y al selector de modelo en iOS 26 mediante `GlassSupport.swift`. Menús de acción, botones y tarjetas conservan el diseño plano. En iOS 17 y 18 todo conserva el diseño plano original.

@@ -26,6 +26,7 @@
 		flex: none;
 		width: 24px;
 		height: 24px;
+		margin-top: 3px;
 		border-radius: 50%;
 		background: #f4f4f5;
 	}
@@ -34,7 +35,7 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding-top: 1px;
+		padding-top: 3px;
 	}
 
 	.label {

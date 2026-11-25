@@ -268,7 +268,8 @@
 
 	.canvas {
 		position: relative;
-		width: min(100%, 1100px);
+		flex: 0 0 auto;
+		width: min(100%, 1100px, calc((100dvh - 200px) * 1.5));
 		aspect-ratio: 3 / 2;
 		overflow: hidden;
 		border: 1px solid var(--border);
@@ -300,6 +301,7 @@
 
 	.window {
 		position: absolute;
+		z-index: 0;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
@@ -310,6 +312,7 @@
 	}
 
 	.window.active {
+		z-index: 1;
 		border-color: #3f3f46;
 	}
 
@@ -323,7 +326,7 @@
 		border-bottom: 1px solid var(--border);
 		color: var(--muted-strong);
 		font-size: 10px;
-		cursor: default;
+		cursor: pointer;
 	}
 
 	.window-icon {
